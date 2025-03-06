@@ -7,14 +7,14 @@ part 'dog_image.g.dart';
 
 @JsonSerializable()
 class DogImage {
+  // Konstruktor mit Pflichtparametern
+  DogImage({required this.message, required this.status});
+
   // Speichert die URL des Hundebildes, das von der API zurückkommt
   final String message;
 
   // Gibt den Status der API-Antwort an (z. B. "success")
   final String status;
-
-  // Konstruktor mit Pflichtparametern
-  DogImage({required this.message, required this.status});
 
   // Factory-Methode, um JSON-Daten in ein DogImage-Objekt umzuwandeln
   factory DogImage.fromJson(Map<String, dynamic> json) =>

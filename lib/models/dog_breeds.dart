@@ -7,15 +7,15 @@ part 'dog_breeds.g.dart';
 
 @JsonSerializable()
 class DogBreeds {
+  // Konstruktor mit Pflichtparametern
+  DogBreeds({required this.message, required this.status});
+
   // Speichert alle Hunderassen aus der API als Map
   // Der Schlüssel ist der Rassenname, die Werte sind mögliche Unterrassen
   final Map<String, List<String>> message;
 
   // Gibt den Status der API-Antwort an (z. B. "success")
   final String status;
-
-  // Konstruktor mit Pflichtparametern
-  DogBreeds({required this.message, required this.status});
 
   // Factory-Methode, um JSON-Daten in ein DogBreeds-Objekt umzuwandeln
   factory DogBreeds.fromJson(Map<String, dynamic> json) =>
