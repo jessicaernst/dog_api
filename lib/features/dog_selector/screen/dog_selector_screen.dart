@@ -1,6 +1,6 @@
-import 'package:dog_api/features/dog_selector/widgets/dog_image_frame.dart';
 import 'package:dog_api/services/dog_api_services.dart';
 import 'package:flutter/material.dart';
+import 'package:dog_api/features/dog_selector/widgets/dog_image_frame.dart';
 
 class DogSelectorScreen extends StatefulWidget {
   const DogSelectorScreen({super.key});
@@ -10,102 +10,123 @@ class DogSelectorScreen extends StatefulWidget {
 }
 
 class _DogSelectorScreenState extends State<DogSelectorScreen> {
-  // Standardmäßig ist "All" ausgewählt, damit zufällige Bilder geladen werden
-  String selectedBreed = 'all';
-  List<String> breeds = ['all']; // Liste aller Hunderassen, beginnt mit "All"
-  String imageUrl = ''; // Hier wird das Bild gespeichert
-  bool isLoading = false; // Zeigt an, ob ein Bild gerade geladen wird
+  final DogApiService apiService = DogApiService(); // Instanz von DogApiService
+  String selectedBreed = 'all'; // Standardmäßig "All" für zufällige Bilder
+  List<String> breeds = ['all']; // Liste mit allen Rassen, beginnt mit "All"
+  String imageUrl = ''; // Speichert das Bild
+  bool isLoading = false; // Wird genutzt, um Ladeindikator anzuzeigen
+  String? errorMessage; // Fehlermeldungen
 
   @override
   void initState() {
     super.initState();
-    loadBreeds(); // Beim Start die Rassen und ein Bild laden
+    loadBreeds(); // Holt beim Start die Rassen + direkt ein Bild
   }
 
-  // Holt die Liste aller verfügbaren Hunderassen aus der API
+  // 📌 Holt die Liste aller Hunderassen
   Future<void> loadBreeds() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null; // Falls vorher ein Fehler da war, zurücksetzen
+    });
+
     try {
-      final List<String> fetchedBreeds = await DogApiService.fetchBreeds();
+      final List<String> fetchedBreeds = await apiService.fetchBreeds();
       setState(() {
         breeds.addAll(fetchedBreeds);
       });
-      loadDogImage(); // Nachdem die Rassen geladen sind, direkt ein Bild holen
+      loadDogImage(); // Direkt ein Bild laden
     } catch (e) {
-      debugPrint('Error loading breeds: $e');
+      setState(() {
+        errorMessage = "Fehler beim Laden der Rassen!"; // Fehler anzeigen
+      });
     }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
-  // Lädt ein Hundebild – entweder zufällig oder nach ausgewählter Rasse
+  // 📌 Lädt das Hundebild (Zufällig oder nach Auswahl)
   Future<void> loadDogImage() async {
     setState(() {
-      isLoading =
-          true; // Setzt den Ladezustand auf "true", damit der Loader angezeigt wird
+      isLoading = true;
+      errorMessage = null;
     });
+
     try {
       String fetchedImage;
       if (selectedBreed == 'all') {
-        // Wenn "All" gewählt ist, wird ein zufälliges Bild aus allen Rassen geladen
-        fetchedImage = await DogApiService.fetchRandomDogImage();
+        fetchedImage = await apiService.fetchRandomDogImage();
       } else {
-        // Falls eine spezifische Rasse gewählt wurde, wird ein Bild dieser Rasse geladen
-        fetchedImage = await DogApiService.fetchDogImage(selectedBreed);
+        fetchedImage = await apiService.fetchDogImage(selectedBreed);
       }
       setState(() {
-        imageUrl = fetchedImage; // Speichert das geladene Bild in der Variable
+        imageUrl = fetchedImage;
       });
     } catch (e) {
-      debugPrint('Error loading image: $e');
+      setState(() {
+        errorMessage = "Fehler beim Laden des Bildes!";
+      });
     }
+
     setState(() {
-      isLoading = false; // Nach dem Laden wieder auf "false" setzen
+      isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Dog Image Finder')),
+      appBar: AppBar(title: const Text('🐶 Dog Image Finder')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
           child: Column(
             children: [
-              // Dropdown-Menü zur Auswahl der Rasse
+              // 📌 Dropdown-Menü für die Hunderassenauswahl
               DropdownButton<String>(
                 value: selectedBreed,
                 items:
-                    breeds.map((breed) {
-                      return DropdownMenuItem(
-                        value: breed,
-                        child: Text(
-                          breed == 'all'
-                              ? 'ALL BREEDS' // Falls "All" gewählt ist, wird das so angezeigt
-                              : breed
-                                  .replaceAll('/', ' ')
-                                  .toUpperCase(), // Entfernt "/" aus Rassennamen
-                        ),
-                      );
-                    }).toList(),
+                    breeds.isNotEmpty
+                        ? breeds.map((breed) {
+                          return DropdownMenuItem(
+                            value: breed,
+                            child: Text(
+                              breed == 'all'
+                                  ? 'ALL BREEDS'
+                                  : breed.replaceAll('/', ' ').toUpperCase(),
+                            ),
+                          );
+                        }).toList()
+                        : [],
                 onChanged: (value) {
                   setState(() {
-                    selectedBreed = value ?? 'all'; // Setzt die Auswahl um
+                    selectedBreed = value ?? 'all';
                   });
-                  loadDogImage(); // Nach Auswahl sofort neues Bild laden
+                  loadDogImage(); // Direkt neues Bild laden
                 },
               ),
               const SizedBox(height: 16),
-              // Button, um ein neues Bild zu laden
+
+              // 📌 Button zum Neuladen
               ElevatedButton(
                 onPressed: loadDogImage,
                 child: const Text('Fetch Dog Image'),
               ),
+
               const Spacer(),
-              // Zeigt entweder einen Lade-Indikator oder das Bild an
-              isLoading
-                  ? const CircularProgressIndicator()
-                  : imageUrl.isNotEmpty
-                  ? DogImageFrame(imageUrl: imageUrl)
-                  : const Text('No image loaded'),
+
+              // 📌 Ladeanimation, Fehler oder Bild anzeigen
+              if (isLoading)
+                const CircularProgressIndicator()
+              else if (errorMessage != null)
+                Text(errorMessage!, style: const TextStyle(color: Colors.red))
+              else if (imageUrl.isNotEmpty)
+                DogImageFrame(imageUrl: imageUrl)
+              else
+                const Text('No image loaded'),
+
               const Spacer(),
             ],
           ),

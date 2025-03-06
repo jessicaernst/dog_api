@@ -1,11 +1,15 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
 class DogApiService {
+  final http.Client client;
+
+  // Konstruktor, der einen Client annimmt (zum Testen mockbar)
+  DogApiService({http.Client? client}) : client = client ?? http.Client();
+
   // Holt die Liste aller verfügbaren Hunderassen aus der API
-  static Future<List<String>> fetchBreeds() async {
-    final response = await http.get(
+  Future<List<String>> fetchBreeds() async {
+    final response = await client.get(
       Uri.parse('https://dog.ceo/api/breeds/list/all'),
     );
 
@@ -35,8 +39,8 @@ class DogApiService {
   }
 
   // Holt ein Bild einer bestimmten Hunderasse aus der API
-  static Future<String> fetchDogImage(String breed) async {
-    final response = await http.get(
+  Future<String> fetchDogImage(String breed) async {
+    final response = await client.get(
       Uri.parse('https://dog.ceo/api/breed/$breed/images/random'),
     );
 
@@ -51,8 +55,8 @@ class DogApiService {
   }
 
   // Holt ein komplett zufälliges Hundebild aus der API
-  static Future<String> fetchRandomDogImage() async {
-    final response = await http.get(
+  Future<String> fetchRandomDogImage() async {
+    final response = await client.get(
       Uri.parse('https://dog.ceo/api/breeds/image/random'),
     );
 
