@@ -69,7 +69,7 @@ dart pub run build_runner build --delete-conflicting-outputs
 ```
 
 ---
-### 🚀 **Tipp**
+### ℹ️ **Tipp**
 während man die Models erstellt, die auch generiert werden durch json_serializable kann man auch einfach im Terminal
 ```sh
 dart pub run build_runner watch --delete-conflicting-outputs
