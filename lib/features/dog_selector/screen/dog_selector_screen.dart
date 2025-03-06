@@ -38,7 +38,7 @@ class _DogSelectorScreenState extends State<DogSelectorScreen> {
       loadDogImage(); // Direkt ein Bild laden
     } catch (e) {
       setState(() {
-        errorMessage = "Fehler beim Laden der Rassen!"; // Fehler anzeigen
+        errorMessage = 'Fehler beim Laden der Rassen!'; // Fehler anzeigen
       });
     }
 
@@ -66,7 +66,7 @@ class _DogSelectorScreenState extends State<DogSelectorScreen> {
       });
     } catch (e) {
       setState(() {
-        errorMessage = "Fehler beim Laden des Bildes!";
+        errorMessage = 'Fehler beim Laden des Bildes!';
       });
     }
 
